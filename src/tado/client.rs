@@ -10,6 +10,7 @@ use chrono::Utc;
 use lazy_static::lazy_static;
 use log::{error, info};
 use reqwest;
+use serde_json;
 use std::fs;
 
 use super::error::AuthError;
@@ -179,14 +180,22 @@ impl Client {
         let mut url = self.base_url.join(&endpoint).unwrap();
         url.set_query(Some(format!("date={}", date.format("%Y-%m-%d")).as_str()));
 
-        let inside_temperature = self
+        let response = self
             .get(url)
             .await
-            .expect("Unable to connect")
-            .json::<ZoneDayReportApiResponse>()
+            .expect("Unable to connect");
+        
+        let body = response
+            .text()
             .await
-            .expect("Unable to deserialize")
-            .convert_inside_temperature();
+            .expect("Unable to read response body");
+        
+        info!("API Response body: {}", body);
+        
+        let day_report: ZoneDayReportApiResponse = serde_json::from_str(&body)
+            .expect("Unable to deserialize");
+        
+        let inside_temperature = day_report.convert_inside_temperature();
 
         HistoryReport {
             name: zone.name.clone(),

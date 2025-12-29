@@ -185,6 +185,7 @@ pub struct ZoneDayReportMeasuredDataApiResponse {
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 #[allow(non_snake_case)]
 pub struct ZoneDayReportApiResponse {
+    #[serde(default)]
     pub zoneType: String,
     pub interval: TimeInterval,
     pub hoursInDay: i32,
