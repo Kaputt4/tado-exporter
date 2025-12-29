@@ -7,8 +7,9 @@ RUN apt update && \
 
 WORKDIR /usr/src/tado-exporter
 
+# Copy Cargo files first
 COPY Cargo.* .
-COPY src/ ./src
+
 RUN rustup toolchain install stable
 
 # Work only on AMD64, NO CROSS COMPILE Tested on Windows
@@ -34,6 +35,18 @@ ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc CC
 
 FROM builder-$TARGETARCH$TARGETVARIANT as final-builder
 RUN rustup target add ${TARGET}
+
+# Build dependencies for this specific target (caches this layer per target)
+RUN mkdir -p src && echo "fn main() {}" > src/main.rs && \
+    cargo build --target ${TARGET} --release --target-dir /build 2>&1 | grep -v "warning:" || true
+
+# Copy actual source code
+COPY src/ ./src
+
+# Touch main.rs to force rebuild with actual code
+RUN touch src/main.rs
+
+# Build final binary with actual code
 RUN cargo build --target ${TARGET} --release --target-dir /build && \
     cp /build/$TARGET/release/tado-exporter / && \
     rm -rf /build
