@@ -230,8 +230,11 @@ impl Client {
     }
 
     pub async fn retrieve_zones(&mut self) -> Vec<ZoneState> {
+        info!("Starting to retrieve zones");
+        
         // retrieve home details (only if we don't already have a home identifier)
         if self.home_id == 0 {
+            info!("Home ID not cached, retrieving from API");
             let me_response = match self.me().await {
                 Ok(resp) => resp,
                 Err(e) => {
@@ -241,6 +244,7 @@ impl Client {
             };
 
             self.home_id = me_response.homes.first().unwrap().id;
+            info!("Retrieved home ID: {}", self.home_id);
         }
 
         // retrieve home different zones
@@ -252,6 +256,8 @@ impl Client {
             }
         };
 
+        info!("Found {} zones in home", zones_response.len());
+
         let mut response = Vec::<ZoneState>::new();
 
         for zone in zones_response {
@@ -260,6 +266,7 @@ impl Client {
             response.push(zone.convert());
         }
 
+        info!("Successfully retrieved {} zones", response.len());
         response
     }
 
@@ -268,6 +275,7 @@ impl Client {
 
         // retrieve home details (only if we don't already have a home identifier)
         if self.home_id == 0 {
+            info!("Home ID not cached, retrieving from API");
             let me_response = match self.me().await {
                 Ok(resp) => resp,
                 Err(e) => {
@@ -277,6 +285,7 @@ impl Client {
             };
 
             self.home_id = me_response.homes.first().unwrap().id;
+            info!("Retrieved home ID: {}", self.home_id);
         }
 
         // retrieve weather state
@@ -288,6 +297,10 @@ impl Client {
             }
         };
 
+        info!("Successfully retrieved weather data: {:.2}°C, {:.2}% solar intensity", 
+              weather_response.outsideTemperature.celsius, 
+              weather_response.solarIntensity.percentage);
+        
         Some(weather_response.convert())
     }
 
