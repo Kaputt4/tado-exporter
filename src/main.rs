@@ -38,14 +38,14 @@ async fn main() {
     }
 }
 
-async fn route(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+/* async fn route(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     info!("{}", req.uri());
 
     match req.uri().path() {
         "/history" => metrics::history(req).await,
         _ => metrics::renderer(req).await,
     }
-}
+} */
 
 fn run_ticker(config: config_loader::Config) {
     tokio::spawn(async move {
@@ -62,7 +62,7 @@ fn run_ticker(config: config_loader::Config) {
         let mut ticker = tokio::time::interval(Duration::from_secs(config.ticker));
         ticker.tick().await;
 
-        metrics::set_history(tado_client.history().await);
+        //metrics::set_history(tado_client.history().await);
 
         loop {
             ticker.tick().await;
