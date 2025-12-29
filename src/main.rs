@@ -28,7 +28,7 @@ async fn main() {
     let addr = ([0, 0, 0, 0], 9898).into();
     info!("starting tado° exporter on address: {addr:?}");
 
-    let make_svc = make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(route)) });
+    let make_svc = make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(metrics::renderer)) });
 
     let server = Server::bind(&addr).serve(make_svc);
 
